@@ -1,0 +1,45 @@
+version: '3.7'
+services:
+  kt-postgres:
+    image: postgres:10
+    hostname: kt-postgres
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: keethings
+      POSTGRES_PASSWORD: keethings
+    ports:
+      - 5432:5432 
+    networks:
+      - postgres_net 
+
+  kt-keycloak:
+    image: jboss/keycloak:12.0.4
+    environment:
+      DB_VENDOR: POSTGRES
+      DB_ADDR: kt-postgres:5432
+      DB_DATABASE: postgres
+      DB_USER: keethings
+      DB_SCHEMA: public
+      DB_PASSWORD: keethings
+      KEYCLOAK_USER: admin
+      KEYCLOAK_PASSWORD: Pa55w0rd
+      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+      #JDBC_PARAMS: "ssl=true"
+    ports:
+      - 8080:8080
+    depends_on:
+      - kt-postgres
+    volumes:
+      - keycloak:/opt/jboss/keycloak 
+    networks:
+      - postgres_net 
+    
+volumes: 
+  postgres_data:
+  keycloak:
+
+networks: 
+  postgres_net:
